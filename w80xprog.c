@@ -357,7 +357,7 @@ int entry_secboot(void)
 
     termios_rts(1);
     usleep(5000);
-    termios_print("AT+Z\n");
+    termios_print("AT+Z\r\n");
     termios_rts(0);
 
     for (count = 0; count < 50; ++count) {
