@@ -48,9 +48,9 @@ static inline int atoh(const char *src, uint8_t *mac, unsigned int len)
     memset(mac, 0, len);
 
     for (count = 0; count < (len * 2); ++count) {
-        if (*src && *src <= '9')
+        if (*src >= '0' && *src <= '9')
             tmp = *src++ - '0';
-        else if (tolower(*src) <= 'f')
+        else if (tolower(*src) >= 'a' && tolower(*src) <= 'f')
             tmp = *src++ - 'a' + 10;
         else
             return -EINVAL;

@@ -62,7 +62,7 @@ static __noreturn void version(void)
 int main(int argc, char *const argv[])
 {
     unsigned long flags = 0;
-    unsigned int speed = 0, esize = 0;
+    unsigned long speed = 0, esize = 0;
     char *bmac = NULL, *wmac = NULL, *gain = NULL;
     char *file = NULL, *port = DEFAULTS_PORT;
     int optidx, ret;
@@ -77,13 +77,13 @@ int main(int argc, char *const argv[])
                 flags |= FLAG_INFO;
                 break;
             case 's':
-                speed = atoi(optarg);
+                speed = strtoul(optarg, NULL, 0);
                 break;
             case 'f':
                 file = optarg;
                 break;
             case 'e':
-                esize = atoi(optarg);
+                esize = strtoul(optarg, NULL, 0);
                 break;
             case 'b':
                 if (strlen(optarg) != 12)
