@@ -140,7 +140,7 @@ int spinor_flash(uint8_t *src, unsigned long len)
 
 retry:
         if (unlikely(!retry--)) {
-            printf("  Abort Transfer after twenty retries\n");
+            printf("\tAbort Transfer after twenty retries\n");
             goto retry;
         }
 
@@ -157,11 +157,11 @@ retry:
         if (likely(val == XMODEM_ACK))
             continue;
         else if (val == XMODEM_NAK) {
-            printf("  Transfer Retry\n");
+            printf("\tTransfer Retry\n");
             goto retry;
         }
 
-        printf("  Unknow Retval 0x%x\n", val);
+        printf("\tUnknow Retval 0x%x\n", val);
         goto error;
     }
 
@@ -170,7 +170,7 @@ retry:
     if ((ret = termios_read(&val, 1)) < 0)
             return ret;
 
-    printf("  Flash Done.\n");
+    printf("\tFlash Done.\n");
     return val != XMODEM_ACK ? -ECOMM : 0;
 
 error:
@@ -194,7 +194,7 @@ int spinor_erase(unsigned long size)
     if (ret < 0)
         return ret;
 
-    printf("  %s\n", return_errno[state - RETURN_NOMAL]);
+    printf("\t%s\n", return_errno[state - RETURN_NOMAL]);
     return state - RETURN_NOMAL;
 }
 
@@ -227,7 +227,7 @@ int flash_bmac(const char *mac)
 
     printf("Flash BT MAC:\n");
     if (atoh(mac, &param.index[0], 6)) {
-        printf("  incorrect format\n");
+        printf("\tincorrect format\n");
         return -EINVAL;
     }
 
@@ -235,7 +235,7 @@ int flash_bmac(const char *mac)
     if (ret < 0)
         return ret;
 
-    printf("  %s\n", return_errno[state - RETURN_NOMAL]);
+    printf("\t%s\n", return_errno[state - RETURN_NOMAL]);
     return state - RETURN_NOMAL;
 }
 
@@ -247,7 +247,7 @@ int flash_wmac(const char *mac)
 
     printf("Flash WIFI MAC:\n");
     if (atoh(mac, &param.index[0], 6)) {
-        printf("  incorrect format\n");
+        printf("\tincorrect format\n");
         return -EINVAL;
     }
 
@@ -255,7 +255,7 @@ int flash_wmac(const char *mac)
     if (ret < 0)
         return ret;
 
-    printf("  %s\n", return_errno[state - RETURN_NOMAL]);
+    printf("\t%s\n", return_errno[state - RETURN_NOMAL]);
     return state - RETURN_NOMAL;
 }
 
@@ -267,7 +267,7 @@ int flash_gain(const char *mac)
 
     printf("Flash RF GAIN:\n");
     if (atoh(mac, &param.index[0], 84)) {
-        printf("  incorrect format\n");
+        printf("\tincorrect format\n");
         return -EINVAL;
     }
 
@@ -275,7 +275,7 @@ int flash_gain(const char *mac)
     if (ret < 0)
         return ret;
 
-    printf("  %s\n", return_errno[state - RETURN_NOMAL]);
+    printf("\t%s\n", return_errno[state - RETURN_NOMAL]);
     return state - RETURN_NOMAL;
 }
 
