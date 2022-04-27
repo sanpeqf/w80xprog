@@ -4,6 +4,7 @@
  */
 
 #include "w80xprog.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -27,7 +28,34 @@ static char *return_errno[] = {
     [RETURN_ESETGAIN    - RETURN_NOMAL] = "Set gain failed.",
     [RETURN_ESETMAC     - RETURN_NOMAL] = "Failed to set mac.",
 };
+static inline void format_haddr(void *src) {
+    char *str;
+    char buff[
+        ETH_HEX_ALEN + 
+        5  +            /*  5 times':'  */
+        1               /*  '\0'    */
+    ];
+    memset(buff, 0, sizeof(buff));
+    //remove 'Mac:' and '\r\n'
+    memcpy(buff, src + 4, 12);
 
+
+    for (str = buff; *str; str++) {
+        *str = tolower(*str);
+    }
+
+    //add ':'
+    str = src;
+    for (int i = 0 ; i < 6; i++) {
+        memcpy(str, buff + i * 2, 2);
+        str += 2;
+        if (i != 5) {
+            memcpy(str, ":", 1);
+            str += 1;
+        }
+    }
+    memset(str , 0 , 1);
+}
 static inline void replace_wrap(void *src)
 {
     char *str;
@@ -286,57 +314,57 @@ int flash_gain(const char *mac)
 
 int chip_info(void)
 {
-    uint8_t *buff = (uint8_t [256]){};
+    uint8_t buff[256];
     int ret;
 
     printf("Chip info:\n");
 
     printf("\tBT");
-    ret = opcode_transfer(OPCODE_GET_BT_MAC, NULL, buff, 255);
+    ret = opcode_transfer(OPCODE_GET_BT_MAC, NULL, buff, sizeof(buff) -1);
     if (ret < 0)
         return ret;
     else if (ret == 1)
         printf(":\t%s\n", return_errno[buff[0] - RETURN_NOMAL]);
     else {
-        replace_wrap(buff);
+        format_haddr(buff);
         printf(":\t%s\n", buff);
     }
 
-    memset(buff, 0, 256);
+    memset(buff, 0, sizeof(buff));
 
     printf("\tWifi");
-    ret = opcode_transfer(OPCODE_GET_NET_MAC, NULL, buff, 255);
+    ret = opcode_transfer(OPCODE_GET_NET_MAC, NULL, buff, sizeof(buff) -1);
     if (ret < 0)
         return ret;
     else if (ret == 1)
         printf(":\t%s\n", return_errno[buff[0] - RETURN_NOMAL]);
     else {
-        replace_wrap(buff);
+        format_haddr(buff);
         printf(":\t%s\n", buff);
     }
 
-    memset(buff, 0, 256);
+    memset(buff, 0, sizeof(buff));
 
     printf("\tFlash");
-    ret = opcode_transfer(OPCODE_GET_SPINOR, NULL, buff, 255);
+    ret = opcode_transfer(OPCODE_GET_SPINOR, NULL, buff, sizeof(buff) -1);
     if (ret < 0)
         return ret;
     replace_wrap(buff);
     printf(":\t%s\n", buff);
 
-    memset(buff, 0, 256);
+    memset(buff, 0, sizeof(buff));
 
     printf("\tROM");
-    ret = opcode_transfer(OPCODE_GET_VERSION, NULL, buff, 255);
+    ret = opcode_transfer(OPCODE_GET_VERSION, NULL, buff, sizeof(buff) -1);
     if (ret < 0)
         return ret;
     replace_wrap(buff);
     printf(":\t%s\n", buff);
 
-    memset(buff, 0, 256);
+    memset(buff, 0, sizeof(buff));
 
     printf("\tRF");
-    ret = opcode_transfer(OPCODE_GET_GAIN, NULL, buff, 255);
+    ret = opcode_transfer(OPCODE_GET_GAIN, NULL, buff, sizeof(buff) -1);
     if (ret < 0)
         return ret;
     replace_wrap(buff);
@@ -356,7 +384,7 @@ int chip_reset(void)
 
 int entry_secboot(void)
 {
-    uint8_t *buff = (uint8_t [256]){};
+    uint8_t buff[256];
     unsigned int count;
     int ret;
 
@@ -372,7 +400,7 @@ int entry_secboot(void)
         usleep(2000);
     }
 
-    if ((ret = termios_read(buff, 255)) < 0)
+    if ((ret = termios_read(buff, sizeof(buff) -1)) < 0)
         return ret;
 
     return 0;

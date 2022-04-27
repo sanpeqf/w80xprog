@@ -11,6 +11,8 @@
 #define OPCODE(len, opcode) (((len) << 8)| ((opcode) << 0))
 #define OPCODE_DATA(opcode) (((opcode) >> 0) & 0xff)
 #define OPCODE_LEN(opcode) (((opcode) >> 8) & 0xff)
+#define ETH_ALEN     6
+#define ETH_HEX_ALEN 12
 
 enum xmodem_types {
     XMODEM_SOH  = 0x02,
