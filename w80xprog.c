@@ -154,7 +154,7 @@ error:
 
 int spinor_flash(uint8_t *src, unsigned long len)
 {
-    uint8_t *buffer = (uint8_t [1024]){};
+    uint8_t buff[1024];
     unsigned long xfer, retry;
     uint8_t count, val;
     int ret;
@@ -162,14 +162,14 @@ int spinor_flash(uint8_t *src, unsigned long len)
     printf("Chip Flash:\n");
     wait_busy();
 
-    for (count = 1; (xfer = min(len, 1024)); len -= xfer, src += xfer, ++count) {
+    for (count = 1; (xfer = min(len, sizeof(buff))); len -= xfer, src += xfer, ++count) {
         uint16_t crc;
         retry = 20;
 
-        memcpy(buffer, src, xfer);
-        if (xfer < 1024)
-            memset(buffer + xfer, 0x1a, 1024 - xfer);
-        crc = crc16_xmodem(buffer, 1024);
+        memcpy(buff, src, xfer);
+        if (xfer < sizeof(buff))
+            memset(buff + xfer, 0x1a, sizeof(buff) - xfer);
+        crc = crc16_xmodem(buff, sizeof(buff));
 
 retry:
         if (unlikely(!retry--)) {
@@ -180,7 +180,7 @@ retry:
         if (((ret = termios_write(&(uint8_t){XMODEM_SOH}, 1)) < 0)
           ||((ret = termios_write(&count, 1)) < 0)
           ||((ret = termios_write(&(uint8_t){0xff - count}, 1)) < 0)
-          ||((ret = termios_write(buffer, 1024)) < 0)
+          ||((ret = termios_write(buff, sizeof(buff))) < 0)
           ||((ret = termios_write((uint8_t [2]){crc >> 8, crc}, 2)) < 0))
             return ret;
 
