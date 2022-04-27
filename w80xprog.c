@@ -28,23 +28,25 @@ static char *return_errno[] = {
     [RETURN_ESETGAIN    - RETURN_NOMAL] = "Set gain failed.",
     [RETURN_ESETMAC     - RETURN_NOMAL] = "Failed to set mac.",
 };
-static inline void format_haddr(void *src) {
+
+static inline void format_haddr(void *src)
+{
     char *str;
     char buff[
-        ETH_HEX_ALEN + 
+        ETH_HEX_ALEN +
         5  +            /*  5 times':'  */
         1               /*  '\0'    */
     ];
+
     memset(buff, 0, sizeof(buff));
-    //remove 'Mac:' and '\r\n'
+
+    // remove 'Mac:' and '\r\n'
     memcpy(buff, src + 4, 12);
 
-
-    for (str = buff; *str; str++) {
+    for (str = buff; *str; str++)
         *str = tolower(*str);
-    }
 
-    //add ':'
+    // add ':'
     str = src;
     for (int i = 0 ; i < 6; i++) {
         memcpy(str, buff + i * 2, 2);
