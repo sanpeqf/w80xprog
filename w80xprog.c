@@ -48,6 +48,9 @@ static inline int atoh(const char *src, uint8_t *mac, unsigned int len)
     memset(mac, 0, len);
 
     for (count = 0; count < (len * 2); ++count) {
+        if (*src == ':')
+            src++;
+
         if (*src >= '0' && *src <= '9')
             tmp = *src++ - '0';
         else if (tolower(*src) >= 'a' && tolower(*src) <= 'f')
@@ -156,6 +159,7 @@ retry:
 
         if (likely(val == XMODEM_ACK))
             continue;
+
         else if (val == XMODEM_NAK) {
             printf("\tTransfer Retry\n");
             goto retry;
@@ -166,9 +170,10 @@ retry:
     }
 
     if ((ret = termios_write(&(uint8_t){XMODEM_EOT}, 1)) < 0)
-            return ret;
+        return ret;
+
     if ((ret = termios_read(&val, 1)) < 0)
-            return ret;
+        return ret;
 
     printf("\tFlash Done.\n");
     return val != XMODEM_ACK ? -ECOMM : 0;

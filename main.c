@@ -59,6 +59,14 @@ static __noreturn void version(void)
     exit(1);
 }
 
+static void check_mac(const char *str)
+{
+    if (strlen(str) != 17 || str[2]  != ':' ||
+        str[5]  != ':' || str[8]  != ':' ||
+        str[11] != ':' || str[14] != ':')
+        usage();
+}
+
 int main(int argc, char *const argv[])
 {
     unsigned long flags = 0;
@@ -86,13 +94,11 @@ int main(int argc, char *const argv[])
                 esize = strtoul(optarg, NULL, 0);
                 break;
             case 'b':
-                if (strlen(optarg) != 12)
-                    usage();
+                check_mac(optarg);
                 bmac = optarg;
                 break;
             case 'w':
-                if (strlen(optarg) != 12)
-                    usage();
+                check_mac(optarg);
                 wmac = optarg;
                 break;
             case 'g':
