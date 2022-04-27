@@ -51,7 +51,7 @@ static inline int atoh(const char *src, uint8_t *mac, unsigned int len)
         if (*src >= '0' && *src <= '9')
             tmp = *src++ - '0';
         else if (tolower(*src) >= 'a' && tolower(*src) <= 'f')
-            tmp = *src++ - 'a' + 10;
+            tmp = tolower(*src++) - 'a' + 10;
         else
             return -EINVAL;
 
@@ -286,56 +286,56 @@ int chip_info(void)
 
     printf("Chip info:\n");
 
-    printf("  BT");
+    printf("\tBT");
     ret = opcode_transfer(OPCODE_GET_BT_MAC, NULL, buff, 255);
     if (ret < 0)
         return ret;
     else if (ret == 1)
-        printf(": %s\n", return_errno[buff[0] - RETURN_NOMAL]);
+        printf(":\t%s\n", return_errno[buff[0] - RETURN_NOMAL]);
     else {
         replace_wrap(buff);
-        printf(": %s\n", buff);
+        printf(":\t%s\n", buff);
     }
 
     memset(buff, 0, 256);
 
-    printf("  Wifi");
+    printf("\tWifi");
     ret = opcode_transfer(OPCODE_GET_NET_MAC, NULL, buff, 255);
     if (ret < 0)
         return ret;
     else if (ret == 1)
-        printf(": %s\n", return_errno[buff[0] - RETURN_NOMAL]);
+        printf(":\t%s\n", return_errno[buff[0] - RETURN_NOMAL]);
     else {
         replace_wrap(buff);
-        printf(": %s\n", buff);
+        printf(":\t%s\n", buff);
     }
 
     memset(buff, 0, 256);
 
-    printf("  Flash");
+    printf("\tFlash");
     ret = opcode_transfer(OPCODE_GET_SPINOR, NULL, buff, 255);
     if (ret < 0)
         return ret;
     replace_wrap(buff);
-    printf(": %s\n", buff);
+    printf(":\t%s\n", buff);
 
     memset(buff, 0, 256);
 
-    printf("  ROM");
+    printf("\tROM");
     ret = opcode_transfer(OPCODE_GET_VERSION, NULL, buff, 255);
     if (ret < 0)
         return ret;
     replace_wrap(buff);
-    printf(": %s\n", buff);
+    printf(":\t%s\n", buff);
 
     memset(buff, 0, 256);
 
-    printf("  RF");
+    printf("\tRF");
     ret = opcode_transfer(OPCODE_GET_GAIN, NULL, buff, 255);
     if (ret < 0)
         return ret;
     replace_wrap(buff);
-    printf(": %s\n", buff);
+    printf(":\t%s\n", buff);
 
     return 0;
 }
