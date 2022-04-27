@@ -37,17 +37,17 @@ static const struct option options[] = {
 static __noreturn void usage(void)
 {
     printf("Usage: w80xprog [options]...\n");
-    printf("  -h, --help            display this message\n");
-    printf("  -p, --port <device>   set device path\n");
-    printf("  -i, --info            read the chip info\n");
-    printf("  -s, --speed <freq>    increase the download speed\n");
-    printf("  -f, --flash <file>    flash chip with data from filename\n");
-    printf("  -e, --erase <size>    erase the entire chip\n");
-    printf("  -b, --bt <mac>        set bluetooth mac address\n");
-    printf("  -w, --wifi <mac>      set wifi mac address\n");
-    printf("  -g, --gain <gain>     set power amplifier gain\n");
-    printf("  -r, --reset           reset chip after operate\n");
-    printf("  -v, --version         display version information\n");
+    printf("\t-h, --help            display this message\n");
+    printf("\t-p, --port <device>   set device path\n");
+    printf("\t-i, --info            read the chip info\n");
+    printf("\t-s, --speed <freq>    increase the download speed\n");
+    printf("\t-f, --flash <file>    flash chip with data from filename\n");
+    printf("\t-e, --erase <size>    erase the entire chip\n");
+    printf("\t-b, --bt <mac>        set bluetooth mac address\n");
+    printf("\t-w, --wifi <mac>      set wifi mac address\n");
+    printf("\t-g, --gain <gain>     set power amplifier gain\n");
+    printf("\t-r, --reset           reset chip after operate\n");
+    printf("\t-v, --version         display version information\n");
     exit(1);
 }
 
