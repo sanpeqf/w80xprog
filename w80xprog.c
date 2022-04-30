@@ -55,6 +55,7 @@ static inline void format_haddr(void *src)
             str += 1;
         }
     }
+    memset(str, 0, 1);
 }
 static inline void replace_wrap(void *src)
 {
