@@ -34,10 +34,9 @@ static inline void format_haddr(void *src)
     char *str;
     char buff[
         ETH_HEX_ALEN +
-        5  +            /*  5 times':'  */
         1               /*  '\0'    */
     ];
-
+    //the raw haddr format is "Mac:ABABABABABAB\r\n", we need format it
     memset(buff, 0, sizeof(buff));
 
     // remove 'Mac:' and '\r\n'
@@ -56,7 +55,6 @@ static inline void format_haddr(void *src)
             str += 1;
         }
     }
-    memset(str , 0 , 1);
 }
 static inline void replace_wrap(void *src)
 {
