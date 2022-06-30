@@ -4,7 +4,6 @@
  */
 
 #include "w80xprog.h"
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -31,40 +30,34 @@ static char *return_errno[] = {
 
 static inline void format_haddr(void *src)
 {
-    char *str;
-    char buff[
-        ETH_HEX_ALEN +
-        1               /*  '\0'    */
-    ];
-    //the raw haddr format is "Mac:ABABABABABAB\r\n", we need format it
-    memset(buff, 0, sizeof(buff));
+    char buff[ETH_HEX_ALEN + 6], *str;
+    unsigned int count;
 
-    // remove 'Mac:' and '\r\n'
+    /* the raw haddr format is "Mac:ABABABABABAB\r\n", we need format it */
+    memset(buff, 0, sizeof(buff));
     memcpy(buff, src + 4, 12);
 
     for (str = buff; *str; str++)
         *str = tolower(*str);
 
-    // add ':'
-    str = src;
-    for (int i = 0 ; i < 6; i++) {
-        memcpy(str, buff + i * 2, 2);
+    for (str = src, count = 0; count < 6; ++count) {
+        memcpy(str, buff + count * 2, 2);
         str += 2;
-        if (i != 5) {
+        if (count != 5) {
             memcpy(str, ":", 1);
             str += 1;
         }
     }
+
     memset(str, 0, 1);
 }
+
 static inline void replace_wrap(void *src)
 {
     char *str;
 
     for (str = src; *str; str++) {
-        if (*str == '\n' ||
-            *str == '\r' ||
-            *str == ':')
+        if (*str == '\n' || *str == '\r' || *str == ':')
             *str  = ' ';
     }
 }
@@ -377,7 +370,6 @@ int chip_info(void)
 int chip_reset(void)
 {
     int ret;
-
     printf("Chip reset...\n");
     ret = opcode_transfer(OPCODE_REBOOT, NULL, NULL, 0);
     return ret < 0 ? ret : 0;

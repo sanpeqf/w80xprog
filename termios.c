@@ -13,43 +13,18 @@
 
 static int ttys;
 
-static speed_t termios_speed[] = {
-    B0,
-    B50,      B75,      B110,     B134,     B150,
-    B200,     B300,     B600,     B1200,    B1800,
-    B2400,    B4800,    B9600,    B19200,   B38400,
-    B57600,   B115200,  B230400,  B460800,  B500000,
-    B576000,  B921600,  B1000000, B1152000, B1500000,
-    B2000000, B2500000, B3000000, B3500000, B4000000,
-};
-
-static unsigned int termios_rates[] = {
-    0,
-    50,      75,      110,     134,     150,
-    200,     300,     600,     1200,    1800,
-    2400,    4800,    9600,    19200,   38400,
-    57600,   115200,  230400,  460800,  500000,
-    576000,  921600,  1000000, 1152000, 1500000,
-    2000000, 2500000, 3000000, 3500000, 4000000,
-};
-
-int termios_set_speed(unsigned int speed)
+int termios_setspeed(unsigned int speed)
 {
     struct termios term;
-    unsigned int index = 0;
     int retval;
 
     retval = tcgetattr(ttys, &term);
     if (retval)
         return retval;
 
-    while (termios_rates[++index] < speed) {
-        if ((index + 1) > ARRAY_SIZE(termios_speed))
-            return -EINVAL;
-    }
-
-    cfsetispeed(&term, termios_speed[index]);
-    cfsetospeed(&term, termios_speed[index]);
+    retval = cfsetspeed(&term, speed);
+    if (retval)
+        return retval;
 
     tcflush(ttys, TCIOFLUSH);
     return tcsetattr(ttys, TCSANOW, &term);
@@ -60,7 +35,7 @@ int termios_setup(unsigned int speed, int databits, int stopbits, char parity)
     struct termios term;
     int retval;
 
-    retval = termios_set_speed(speed);
+    retval = termios_setspeed(speed);
     if (retval)
         return retval;
 

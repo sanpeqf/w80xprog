@@ -3,11 +3,14 @@
  * Copyright(c) 2021 Sanpe <sanpeqf@gmail.com>
  */
 
-#ifndef _W80xPROG_H_
-#define _W80xPROG_H_
+#ifndef _W80XPROG_H_
+#define _W80XPROG_H_
 
 #include "w80xhw.h"
 #include <stdbool.h>
+
+#define ETH_ALEN 6
+#define ETH_HEX_ALEN 12
 
 /* crc16.c */
 uint16_t crc16_xmodem(const uint8_t *src, unsigned int len);
@@ -15,7 +18,7 @@ uint16_t crc16_ccitt(const uint8_t *src, unsigned int len);
 
 /* termios.c */
 extern int termios_open(char *path);
-extern int termios_set_speed(unsigned int speed);
+extern int termios_setspeed(unsigned int speed);
 extern int termios_flush(void);
 extern int termios_setup(unsigned int speed, int databits, int stopbits, char parity);
 extern int termios_rts(bool enable);
@@ -34,4 +37,4 @@ extern int spinor_erase(unsigned long size);
 extern int chip_info(void);
 extern int chip_reset(void);
 
-#endif  /* _W80xPROG_H_ */
+#endif  /* _W80XPROG_H_ */

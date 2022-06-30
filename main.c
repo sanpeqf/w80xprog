@@ -69,8 +69,7 @@ static void check_mac(const char *str)
 
 int main(int argc, char *const argv[])
 {
-    unsigned long flags = 0;
-    unsigned long speed = 0, esize = 0;
+    unsigned long speed = 0, flags = 0, esize = 0;
     char *bmac = NULL, *wmac = NULL, *gain = NULL;
     char *file = NULL, *port = DEFAULTS_PORT;
     int optidx, ret;
@@ -81,36 +80,46 @@ int main(int argc, char *const argv[])
             case 'p':
                 port = optarg;
                 break;
+
             case 'i':
                 flags |= FLAG_INFO;
                 break;
+
             case 's':
                 speed = strtoul(optarg, NULL, 0);
                 break;
+
             case 'f':
                 file = optarg;
                 break;
+
             case 'e':
                 esize = strtoul(optarg, NULL, 0);
                 break;
+
             case 'b':
                 check_mac(optarg);
                 bmac = optarg;
                 break;
+
             case 'w':
                 check_mac(optarg);
                 wmac = optarg;
                 break;
+
             case 'g':
                 if (strlen(optarg) != 168)
                     usage();
                 gain = optarg;
                 break;
+
             case 'r':
                 flags |= FLAG_RESET;
                 break;
+
             case 'v':
                 version();
+
             case 'h': default:
                 usage();
         }
@@ -122,7 +131,7 @@ int main(int argc, char *const argv[])
     if ((ret = termios_open(port)))
         err(ret, "Failed to open port");
 
-    if ((ret = termios_setup(115200, 8, 1, 'N')))
+    if ((ret = termios_setup(DEFAULTS_SPEED, 8, 1, 'N')))
         err(ret, "Failed to setup port");
 
     if ((ret = entry_secboot()))
@@ -146,7 +155,7 @@ int main(int argc, char *const argv[])
     if (speed) {
         if ((ret = serial_speed(speed)))
             err(ret, "Error while set chip speed");
-        if ((ret = termios_set_speed(speed)))
+        if ((ret = termios_setspeed(speed)))
             err(ret, "Error while set host speed");
     }
 
