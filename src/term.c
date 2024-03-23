@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * Copyright(c) 2021 Sanpe <sanpeqf@gmail.com>
+ * Copyright(c) 2021 John Sanpe <sanpeqf@gmail.com>
  */
 
 #include <fcntl.h>
@@ -22,6 +22,10 @@ term_setspeed(unsigned int speed)
         return retval;
 
     retval = cfsetspeed(&term, speed);
+    if (retval)
+        return retval;
+
+    retval = tcflush(ttys, TCIOFLUSH);
     if (retval)
         return retval;
 
@@ -90,6 +94,10 @@ term_setup(unsigned int speed, int databits, int stopbits, char parity)
 
     term.c_cc[VTIME] = 0;
     term.c_cc[VMIN] = 0;
+
+    retval = tcflush(ttys, TCIOFLUSH);
+    if (retval)
+        return retval;
 
     retval = tcsetattr(ttys, TCSANOW, &term);
     if (retval)

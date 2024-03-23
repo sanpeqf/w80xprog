@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * Copyright(c) 2021 Sanpe <sanpeqf@gmail.com>
+ * Copyright(c) 2021 John Sanpe <sanpeqf@gmail.com>
  */
 
 #include <stdio.h>
@@ -13,6 +13,7 @@
 #include <w80xprog.h>
 #include <w80xhw.h>
 #include <term.h>
+#include <progress.h>
 
 struct status_info {
     char code;
@@ -237,8 +238,9 @@ opcode_transfer(enum opcode_types opcode, void *param,
 }
 
 static int
-xmodem_transfer(uint8_t *src, size_t size)
+xmodem_transfer(uint8_t *src, unsigned int size)
 {
+    struct progress prog;
     struct xmodem_packet packet;
     unsigned int xfer, retry;
     uint8_t count, value;
@@ -250,6 +252,7 @@ xmodem_transfer(uint8_t *src, size_t size)
     if (retval)
         return retval;
 
+    progress_init(&prog, size);
     for (count = 1; (xfer = bfdev_min(size, PAYLOAD_SIZE)); size -= xfer) {
         memcpy(packet.payload, src, xfer);
         if (xfer < PAYLOAD_SIZE)
@@ -288,10 +291,12 @@ retry:
             goto error;
         }
 
+        progress_update(&prog, xfer);
         src += xfer;
         count++;
     }
 
+    printf("\n");
     value = XMODEM_EOT;
     retval = term_write(&value, 1);
     if (retval < 0)
@@ -301,7 +306,6 @@ retry:
     if (retval)
         return retval;
 
-    printf("\tFlash Done.\n");
     if (value != XMODEM_ACK)
         return -BFDEV_ECOMM;
 
