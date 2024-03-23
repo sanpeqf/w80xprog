@@ -3,14 +3,18 @@
  * Copyright(c) 2021 Sanpe <sanpeqf@gmail.com>
  */
 
-#ifndef _W80xHW_H_
-#define _W80xHW_H_
+#ifndef _W80XHW_H_
+#define _W80XHW_H_
 
-#include "macro.h"
+#include <config.h>
+#include <stdint.h>
+#include <errno.h>
+#include <bfdev.h>
 
 #define OPCODE(len, opcode) (((len) << 8)| ((opcode) << 0))
 #define OPCODE_DATA(opcode) (((opcode) >> 0) & 0xff)
 #define OPCODE_LEN(opcode) (((opcode) >> 8) & 0xff)
+#define PAYLOAD_SIZE 1024
 
 enum xmodem_types {
     XMODEM_SOH  = 0x02,
@@ -65,42 +69,61 @@ enum return_types {
     RETURN_ESETMAC      = 'V',  /* Failed to set mac */
 };
 
+struct xmodem_packet {
+    uint8_t types;
+    uint8_t count;
+    uint8_t verify;
+    uint8_t payload[PAYLOAD_SIZE];
+    bfdev_be16 checksum;
+} __bfdev_packed;
+
 struct opcode_head {
     uint8_t sign;
     uint8_t length;
     uint8_t reserved;
-} __packed;
+} __bfdev_packed;
 
 struct opcode_content {
-    uint16_t crc16;
-    uint8_t opcode;
+    bfdev_le16 checksum;
+    bfdev_le32 opcode;
     uint8_t param[0];
-} __packed;
+} __bfdev_packed;
 
 struct opcode_transfer {
     struct opcode_head head;
     struct opcode_content content;
-} __packed;
+} __bfdev_packed;
 
 struct serial_speed {
-    uint8_t reserved[3];
-    uint32_t speed;
-} __packed;
+    bfdev_le32 speed;
+} __bfdev_packed;
 
 struct mac_flash {
-    uint8_t reserved[3];
     uint8_t index[8];
-} __packed;
+} __bfdev_packed;
 
 struct gain_flash {
-    uint8_t reserved[3];
     uint8_t index[84];
-} __packed;
+} __bfdev_packed;
 
 struct spinor_erase {
-    uint8_t reserved[3];
-    uint16_t index;
-    uint16_t count;
-} __packed;
+    bfdev_le16 index;
+    bfdev_le16 count;
+} __bfdev_packed;
 
-#endif  /* _W80xHW_H_ */
+/* Secboot reply: "Secboot V0.0[\r\n]" */
+#define REPLY_SECBOOT_LEN 12
+
+/* Version reply: "R:8[\n]" */
+#define REPLY_ROM_LEN 3
+
+/* Flash reply: "FID:00,00[\n]" */
+#define REPLY_FLASH_LEN 9
+
+/* Mac reply: "MAC:0123456789abcd[\n]" */
+#define REPLY_MAC_LEN 18
+
+/* Gain reply: "G:FFFFFFFF...[\n]" */
+#define REPLY_GAIN_LEN 96
+
+#endif  /* _W80XHW_H_ */

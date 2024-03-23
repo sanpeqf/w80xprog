@@ -1,0 +1,17 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/*
+ * Copyright(c) 2024 John Sanpe <sanpeqf@gmail.com>
+ */
+
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
+
+#define VERSION_MAJOR ${PROJECT_VERSION_MAJOR}
+#define VERSION_MINOR ${PROJECT_VERSION_MINOR}
+#define PROJECT_VERSION ${PROJECT_VERSION}
+
+#define WAIT_TIMES 20
+#define XMODEM_RETRANS 20
+#define SECBOOT_RETRANS 50
+
+#endif /* _CONFIG_H_ */

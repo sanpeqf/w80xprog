@@ -1,0 +1,3 @@
+[submodule "bfdev"]
+	path = bfdev
+	url = https://github.com/openbfdev/bfdev
