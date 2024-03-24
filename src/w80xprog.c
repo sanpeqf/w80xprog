@@ -267,7 +267,8 @@ xmodem_transfer(uint8_t *src, unsigned int size)
 retry:
         if (bfdev_unlikely(!retry--)) {
             printf("\tAbort Transfer after twenty retries\n");
-            goto retry;
+            retval = -BFDEV_ETIMEDOUT;
+            goto abort;
         }
 
         packet.count = count;
@@ -287,8 +288,15 @@ retry:
                 goto retry;
             }
 
-            printf("\tUnknow Retval 0x%x\n", value);
-            goto error;
+            if (value == XMODEM_CAN) {
+                printf("\tTransfer Cancelled\n");
+                retval = -BFDEV_ECANCELED;
+            } else {
+                printf("\tUnknow Retval %#04x\n", value);
+                retval = -BFDEV_EREMOTEIO;
+            }
+
+            goto abort;
         }
 
         progress_update(&prog, xfer);
@@ -311,7 +319,7 @@ retry:
 
     return -BFDEV_ENOERR;
 
-error:
+abort:
     value = XMODEM_EOT;
     term_write(&value, 1);
     return retval;
@@ -545,7 +553,7 @@ entry_secboot(void)
 
     if (strncmp((void *)version, "Secboot", 7)) {
         printf("\tChip error\n");
-        return -BFDEV_EIO;
+        return -BFDEV_EPERM;
     }
 
     printf("\tVersion: %s\n", version);
