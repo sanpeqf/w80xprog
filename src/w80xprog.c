@@ -212,7 +212,7 @@ opcode_transfer(enum opcode_types opcode, void *param,
     trans->head.sign = 0x21;
     trans->head.reserved = 0x00;
     trans->head.length = OPCODE_LEN(opcode);
-    trans->content.opcode = OPCODE_DATA(opcode);
+    trans->content.opcode = bfdev_cpu_to_le32(OPCODE_DATA(opcode));
 
     psize = OPCODE_LEN(opcode) - sizeof(trans->content);
     if (psize)
@@ -346,8 +346,8 @@ spinor_erase(uint16_t index, uint16_t size)
     int retval;
 
     printf("Chip Erase:\n");
-    param.index = index & 0x7fff,
-    param.count = BFDEV_DIV_ROUND_UP(size, 4096),
+    param.index = bfdev_cpu_to_le16(index & 0x7fff);
+    param.count = bfdev_cpu_to_le16(BFDEV_DIV_ROUND_UP(size, 4096));
 
     retval = opcode_transfer(OPCODE_ERASE_SPINOR, &param, &state, 1);
     if (retval)
@@ -368,7 +368,7 @@ serial_speed(uint32_t speed)
     int retval;
 
     printf("Setting speed:\n");
-    param.speed = speed,
+    param.speed = bfdev_cpu_to_le32(speed),
 
     retval = opcode_transfer(OPCODE_SET_FREQ, &param, &state, 1);
     if (retval)
