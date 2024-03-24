@@ -1,0 +1,52 @@
+name: build default on macos
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 */2 * * *'
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    name: Test on ${{matrix.os}}
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [macos-latest]
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: install dependencies
+        run: |
+          brew update
+          brew install cmake make ccache
+
+      - name: update submodule
+        run: |
+          git submodule update --init --recursive
+
+      - name: configure cmake
+        run: |
+          cmake -B ${{github.workspace}}/build \
+                -D CMAKE_INSTALL_PREFIX=${{github.workspace}}/build/install \
+                -D CMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+                -D CMAKE_C_COMPILER=/usr/local/opt/ccache/libexec/clang
+
+      - name: make
+        run: |
+          cmake --build ${{github.workspace}}/build \
+                --config ${{env.BUILD_TYPE}}
+
+      - name: install
+        run: |
+          cmake --build ${{github.workspace}}/build \
+                --config ${{env.BUILD_TYPE}} -- install

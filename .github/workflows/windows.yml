@@ -1,0 +1,57 @@
+name: build default on windows
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 */2 * * *'
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    name: Test on ${{matrix.os}}
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: install dependencies
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: git cmake make gcc
+
+      - name: update submodule
+        run: |
+          git submodule update --init --recursive
+
+      - name: configure cmake
+        run: |
+            cmake -B build \
+                  -D CMAKE_INSTALL_PREFIX=build/install \
+                  -D CMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+      - name: make
+        run: |
+          cmake --build build \
+                --config ${{env.BUILD_TYPE}}
+
+      - name: install
+        run: |
+          cmake --build build \
+                --config ${{env.BUILD_TYPE}} -- install
