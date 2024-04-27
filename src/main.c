@@ -36,6 +36,7 @@ options[] = {
     {"secboot", required_argument,  0,  'o'},
     {"info",    no_argument,        0,  'i'},
     {"speed",   required_argument,  0,  's'},
+    {"nspeed",  required_argument,  0,  'n'},
     {"flash",   required_argument,  0,  'f'},
     {"erase",   required_argument,  0,  'e'},
     {"bt",      required_argument,  0,  'b'},
@@ -51,9 +52,10 @@ usage(void)
     printf("Usage: w80xprog [options]...\n");
     printf("\t-h, --help                display this message\n");
     printf("\t-p, --port <device>       set device path\n");
+    printf("\t-s, --speed <freq>        set link baudrate\n");
+    printf("\t-n, --nspeed <freq>       set new baudrate\n");
     printf("\t-o, --secboot             entry secboot mode\n");
     printf("\t-i, --info                read the chip info\n");
-    printf("\t-s, --speed <freq>        increase the download speed\n");
     printf("\t-f, --flash <file>        flash chip with data from filename\n");
     printf("\t-e, --erase <offset:size> erase the entire chip\n");
     printf("\t-b, --bt <mac>            set bluetooth mac address\n");
@@ -74,7 +76,7 @@ check_mac(const char *str)
 
 int main(int argc, char *const argv[])
 {
-    unsigned int speed, flags, eidx, esize;
+    unsigned int speed, nspeed, flags, eidx, esize;
     const char *bmac, *wmac, *gain;
     const char *file, *port, *errname;
     int optidx, retval;
@@ -88,7 +90,8 @@ int main(int argc, char *const argv[])
     wmac = NULL;
     gain = NULL;
 
-    speed = 0;
+    speed = DEFAULTS_SPEED;
+    nspeed = 0;
     flags = 0;
     esize = 0;
 
@@ -97,7 +100,7 @@ int main(int argc, char *const argv[])
     printf("License GPLv2+: GNU GPL version 2 or later.\n\n");
 
     for (;;) {
-        arg = getopt_long(argc, argv, "p:ois:f:e:b:w:g:rh", options, &optidx);
+        arg = getopt_long(argc, argv, "p:ois:n:f:e:b:w:g:rh", options, &optidx);
         if (arg == -1)
             break;
 
@@ -116,6 +119,10 @@ int main(int argc, char *const argv[])
 
             case 's':
                 speed = strtoul(optarg, NULL, 0);
+                break;
+
+            case 'n':
+                nspeed = strtoul(optarg, NULL, 0);
                 break;
 
             case 'f':
@@ -165,7 +172,7 @@ int main(int argc, char *const argv[])
         return retval;
     }
 
-    retval = term_setup(DEFAULTS_SPEED, 8, 1, 'N');
+    retval = term_setup(speed, 8, 1, 'N');
     if (retval) {
         bfdev_errname(retval, &errname);
         printf("Failed to setup port: %s\n", errname);
@@ -179,6 +186,22 @@ int main(int argc, char *const argv[])
         if (retval) {
             bfdev_errname(retval, &errname);
             printf("Failed to entry secboot: %s\n", errname);
+            return retval;
+        }
+    }
+
+    if (nspeed) {
+        retval = serial_speed(nspeed);
+        if (retval) {
+            bfdev_errname(retval, &errname);
+            printf("Failed to set chip speed: %s\n", errname);
+            return retval;
+        }
+
+        retval = term_setspeed(nspeed);
+        if (retval) {
+            bfdev_errname(retval, &errname);
+            printf("Failed to set host speed: %s\n", errname);
             return retval;
         }
     }
@@ -224,22 +247,6 @@ int main(int argc, char *const argv[])
         if (retval) {
             bfdev_errname(retval, &errname);
             printf("Failed to flash rf gain: %s\n", errname);
-            return retval;
-        }
-    }
-
-    if (speed) {
-        retval = serial_speed(speed);
-        if (retval) {
-            bfdev_errname(retval, &errname);
-            printf("Failed to set chip speed: %s\n", errname);
-            return retval;
-        }
-
-        retval = term_setspeed(speed);
-        if (retval) {
-            bfdev_errname(retval, &errname);
-            printf("Failed to set host speed: %s\n", errname);
             return retval;
         }
     }
