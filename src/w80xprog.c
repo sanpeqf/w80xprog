@@ -266,7 +266,7 @@ xmodem_transfer(uint8_t *src, unsigned int size)
 
 retry:
         if (bfdev_unlikely(!retry--)) {
-            printf("\tAbort Transfer after twenty retries\n");
+            bfdev_log_err("\tAbort Transfer after twenty retries\n");
             retval = -BFDEV_ETIMEDOUT;
             goto abort;
         }
@@ -284,15 +284,15 @@ retry:
 
         if (bfdev_unlikely(value != XMODEM_ACK)) {
             if (value == XMODEM_NAK) {
-                printf("\tTransfer Retry\n");
+                bfdev_log_err("\tTransfer Retry\n");
                 goto retry;
             }
 
             if (value == XMODEM_CAN) {
-                printf("\tTransfer Cancelled\n");
+                bfdev_log_err("\tTransfer Cancelled\n");
                 retval = -BFDEV_ECANCELED;
             } else {
-                printf("\tUnknow Retval %#04x\n", value);
+                bfdev_log_err("\tUnknow Retval %#04x\n", value);
                 retval = -BFDEV_EREMOTEIO;
             }
 
@@ -330,7 +330,7 @@ spinor_flash(uint8_t *src, size_t size)
 {
     int retval;
 
-    printf("Chip Flash:\n");
+    bfdev_log_info("Chip Flash:\n");
     retval = xmodem_transfer(src, size);
     if (retval)
         return retval;
@@ -345,7 +345,7 @@ spinor_erase(uint16_t index, uint16_t size)
     uint8_t state;
     int retval;
 
-    printf("Chip Erase:\n");
+    bfdev_log_info("Chip Erase:\n");
     param.index = bfdev_cpu_to_le16(index & 0x7fff);
     param.count = bfdev_cpu_to_le16(BFDEV_DIV_ROUND_UP(size, 4096));
 
@@ -353,7 +353,7 @@ spinor_erase(uint16_t index, uint16_t size)
     if (retval)
         return retval;
 
-    printf("\t[%#04x]: %s\n", state, status_info(state));
+    bfdev_log_info("\t[%#04x]: %s\n", state, status_info(state));
     if (state != RETURN_NOMAL)
         return -BFDEV_ECONNABORTED;
 
@@ -367,15 +367,15 @@ serial_speed(uint32_t speed)
     uint8_t state;
     int retval;
 
-    printf("Setting speed:\n");
+    bfdev_log_info("Setting speed:\n");
     param.speed = bfdev_cpu_to_le32(speed),
 
     retval = opcode_transfer(OPCODE_SET_FREQ, &param, &state, 1);
     if (retval)
         return retval;
 
-    printf("\t[%#04x]: %s\n", state, state == 0x06 ? "OK" : "Failed");
-    if (state != 0x06)
+    bfdev_log_info("\t[%#04x]: %s\n", state, state == 6 ? "OK" : "Failed");
+    if (state != 6)
         return -BFDEV_EBUSY;
 
     return -BFDEV_ENOERR;
@@ -388,9 +388,9 @@ flash_bmac(const char *mac)
     uint8_t state;
     int retval;
 
-    printf("Flash BT MAC:\n");
+    bfdev_log_info("Flash BT MAC:\n");
     if (atoh(mac, &param.index[0], 6)) {
-        printf("\tIncorrect format\n");
+        bfdev_log_err("\tIncorrect format\n");
         return -BFDEV_EINVAL;
     }
 
@@ -398,7 +398,7 @@ flash_bmac(const char *mac)
     if (retval)
         return retval;
 
-    printf("\t[%#04x]: %s\n", state, status_info(state));
+    bfdev_log_info("\t[%#04x]: %s\n", state, status_info(state));
     if (state != RETURN_NOMAL)
         return -BFDEV_ECONNABORTED;
 
@@ -412,9 +412,9 @@ flash_wmac(const char *mac)
     uint8_t state;
     int retval;
 
-    printf("Flash WIFI MAC:\n");
+    bfdev_log_info("Flash WIFI MAC:\n");
     if (atoh(mac, &param.index[0], 6)) {
-        printf("\tincorrect format\n");
+        bfdev_log_err("\tincorrect format\n");
         return -BFDEV_EINVAL;
     }
 
@@ -422,7 +422,7 @@ flash_wmac(const char *mac)
     if (retval)
         return retval;
 
-    printf("\t[%#04x]: %s\n", state, status_info(state));
+    bfdev_log_info("\t[%#04x]: %s\n", state, status_info(state));
     if (state != RETURN_NOMAL)
         return -BFDEV_ECONNABORTED;
 
@@ -430,15 +430,15 @@ flash_wmac(const char *mac)
 }
 
 int
-flash_gain(const char *mac)
+flash_gain(const char *gain)
 {
     struct gain_flash param = {};
     uint8_t state;
     int retval;
 
-    printf("Flash RF GAIN:\n");
-    if (atoh(mac, &param.index[0], 84)) {
-        printf("\tincorrect format\n");
+    bfdev_log_info("Flash RF GAIN:\n");
+    if (atoh(gain, &param.index[0], 84)) {
+        bfdev_log_err("\tincorrect format\n");
         return -BFDEV_EINVAL;
     }
 
@@ -446,7 +446,7 @@ flash_gain(const char *mac)
     if (retval)
         return retval;
 
-    printf("\t[%#04x]: %s\n", state, status_info(state));
+    bfdev_log_info("\t[%#04x]: %s\n", state, status_info(state));
     if (state != RETURN_NOMAL)
         return -BFDEV_ECONNABORTED;
 
@@ -459,14 +459,14 @@ chip_info(void)
     uint8_t buff[256];
     int retval;
 
-    printf("Chip information:\n");
+    bfdev_log_info("Chip information:\n");
     retval = opcode_transfer(OPCODE_GET_BT_MAC, NULL, buff, REPLY_MAC_LEN);
     if (retval)
         return retval;
 
     buff[REPLY_MAC_LEN] = '\0';
     format_haddr(buff);
-    printf("\tBT MAC: %s\n", buff);
+    bfdev_log_info("\tBT MAC: %s\n", buff);
 
     retval = opcode_transfer(OPCODE_GET_NET_MAC, NULL, buff, REPLY_MAC_LEN);
     if (retval)
@@ -474,28 +474,28 @@ chip_info(void)
 
     buff[REPLY_MAC_LEN] = '\0';
     format_haddr(buff);
-    printf("\tWIFI MAC: %s\n", buff);
+    bfdev_log_info("\tWIFI MAC: %s\n", buff);
 
     retval = opcode_transfer(OPCODE_GET_SPINOR, NULL, buff, REPLY_FLASH_LEN);
     if (retval)
         return retval;
 
     buff[REPLY_FLASH_LEN] = '\0';
-    printf("\tFlash: %s\n", buff);
+    bfdev_log_info("\tFlash: %s\n", buff);
 
     retval = opcode_transfer(OPCODE_GET_VERSION, NULL, buff, REPLY_ROM_LEN);
     if (retval)
         return retval;
 
     buff[REPLY_ROM_LEN] = '\0';
-    printf("\tROM: %s\n", buff);
+    bfdev_log_info("\tROM: %s\n", buff);
 
     retval = opcode_transfer(OPCODE_GET_GAIN, NULL, buff, REPLY_GAIN_LEN);
     if (retval)
         return retval;
 
     buff[REPLY_GAIN_LEN] = '\0';
-    printf("\tRF GAIN: %s\n", buff);
+    bfdev_log_info("\tRF GAIN: %s\n", buff);
 
     return -BFDEV_ENOERR;
 }
@@ -505,7 +505,7 @@ chip_reset(void)
 {
     int retval;
 
-    printf("Chip reset...\n");
+    bfdev_log_info("Chip reset...\n");
     retval = opcode_transfer(OPCODE_REBOOT, NULL, NULL, 0);
     if (retval)
         return retval;
@@ -520,18 +520,20 @@ entry_secboot(void)
     unsigned int count, index;
     int retval;
 
-    printf("Entry secboot:\n");
-    term_rts(true);
+    bfdev_log_info("Entry secboot:\n");
+    term_reset(true);
     usleep(5000);
 
     term_flush();
     term_print("AT+Z\r\n");
-    term_rts(false);
+    term_reset(false);
 
     buff[0] = 0x1b;
     buff[1] = 0x1b;
     buff[2] = 0x1b;
+
     index = 0;
+    memset(version, 0, sizeof(version));
 
     for (count = 0; count < SECBOOT_RETRANS; ++count) {
         retval = term_write(buff, 3);
@@ -552,11 +554,12 @@ entry_secboot(void)
     }
 
     if (strncmp((void *)version, "Secboot", 7)) {
-        printf("\tChip error\n");
+        bfdev_log_err("\tChip error\n");
         return -BFDEV_EPERM;
     }
 
-    printf("\tVersion: %s\n", version);
+    bfdev_log_info("\tVersion: %s\n", version);
+    sleep(1);
 
     return -BFDEV_ENOERR;
 }

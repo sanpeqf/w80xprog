@@ -17,7 +17,7 @@ extern int
 term_setup(unsigned int speed, int databits, int stopbits, char parity);
 
 extern int
-term_rts(bool enable);
+term_reset(bool enable);
 
 extern int
 term_read(void *data, size_t len);

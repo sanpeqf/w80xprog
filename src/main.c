@@ -49,19 +49,19 @@ options[] = {
 static __bfdev_noreturn void
 usage(void)
 {
-    printf("Usage: w80xprog [options]...\n");
-    printf("\t-h, --help                display this message\n");
-    printf("\t-p, --port <device>       set device path\n");
-    printf("\t-s, --speed <freq>        set link baudrate\n");
-    printf("\t-n, --nspeed <freq>       set new baudrate\n");
-    printf("\t-o, --secboot             entry secboot mode\n");
-    printf("\t-i, --info                read the chip info\n");
-    printf("\t-f, --flash <file>        flash chip with data from filename\n");
-    printf("\t-e, --erase <offset:size> erase the entire chip\n");
-    printf("\t-b, --bt <mac>            set bluetooth mac address\n");
-    printf("\t-w, --wifi <mac>          set wifi mac address\n");
-    printf("\t-g, --gain <gain>         set power amplifier gain\n");
-    printf("\t-r, --reset               reset chip after operate\n");
+    bfdev_log_err("Usage: w80xprog [options]...\n");
+    bfdev_log_err("\t-h, --help                display this message\n");
+    bfdev_log_err("\t-p, --port <device>       set device path\n");
+    bfdev_log_err("\t-s, --speed <freq>        set link baudrate\n");
+    bfdev_log_err("\t-n, --nspeed <freq>       set new baudrate\n");
+    bfdev_log_err("\t-o, --secboot             entry secboot mode\n");
+    bfdev_log_err("\t-i, --info                read the chip info\n");
+    bfdev_log_err("\t-f, --flash <file>        flash chip with data from filename\n");
+    bfdev_log_err("\t-e, --erase <offset:size> erase the specific flash\n");
+    bfdev_log_err("\t-b, --bt <mac>            set bluetooth mac address\n");
+    bfdev_log_err("\t-w, --wifi <mac>          set wifi mac address\n");
+    bfdev_log_err("\t-g, --gain <gain>         set power amplifier gain\n");
+    bfdev_log_err("\t-r, --reset               reset chip after operate\n");
     exit(1);
 }
 
@@ -95,9 +95,10 @@ int main(int argc, char *const argv[])
     flags = 0;
     esize = 0;
 
-    printf("w80xprog v" __bfdev_stringify(PROJECT_VERSION) "\n");
-    printf("Copyright(c) 2021-2024 John Sanpe <sanpeqf@gmail.com>\n");
-    printf("License GPLv2+: GNU GPL version 2 or later.\n\n");
+    bfdev_log_clr_level(&bfdev_log_default);
+    bfdev_log_notice("w80xprog v" __bfdev_stringify(PROJECT_VERSION) "\n");
+    bfdev_log_notice("Copyright(c) 2021-2024 John Sanpe <sanpeqf@gmail.com>\n");
+    bfdev_log_notice("License GPLv2+: GNU GPL version 2 or later.\n\n");
 
     for (;;) {
         arg = getopt_long(argc, argv, "p:ois:n:f:e:b:w:g:rh", options, &optidx);
@@ -168,24 +169,24 @@ int main(int argc, char *const argv[])
     retval = term_open(port);
     if (retval) {
         bfdev_errname(retval, &errname);
-        printf("Failed to open port: %s\n", errname);
+        bfdev_log_err("Failed to open port: %s\n", errname);
         return retval;
     }
 
     retval = term_setup(speed, 8, 1, 'N');
     if (retval) {
         bfdev_errname(retval, &errname);
-        printf("Failed to setup port: %s\n", errname);
+        bfdev_log_err("Failed to setup port: %s\n", errname);
         return retval;
     }
 
-    term_rts(false);
+    term_reset(false);
 
     if (flags & FLAG_SECBOOT) {
         retval = entry_secboot();
         if (retval) {
             bfdev_errname(retval, &errname);
-            printf("Failed to entry secboot: %s\n", errname);
+            bfdev_log_err("Failed to entry secboot: %s\n", errname);
             return retval;
         }
     }
@@ -194,14 +195,14 @@ int main(int argc, char *const argv[])
         retval = serial_speed(nspeed);
         if (retval) {
             bfdev_errname(retval, &errname);
-            printf("Failed to set chip speed: %s\n", errname);
+            bfdev_log_err("Failed to set chip speed: %s\n", errname);
             return retval;
         }
 
         retval = term_setspeed(nspeed);
         if (retval) {
             bfdev_errname(retval, &errname);
-            printf("Failed to set host speed: %s\n", errname);
+            bfdev_log_err("Failed to set host speed: %s\n", errname);
             return retval;
         }
     }
@@ -210,7 +211,7 @@ int main(int argc, char *const argv[])
         retval = chip_info();
         if (retval) {
             bfdev_errname(retval, &errname);
-            printf("Failed to read info: %s\n", errname);
+            bfdev_log_err("Failed to read info: %s\n", errname);
             return retval;
         }
     }
@@ -219,7 +220,7 @@ int main(int argc, char *const argv[])
         retval = spinor_erase(eidx, esize);
         if (retval) {
             bfdev_errname(retval, &errname);
-            printf("Failed to erase chip: %s\n", errname);
+            bfdev_log_err("Failed to erase chip: %s\n", errname);
             return retval;
         }
     }
@@ -228,7 +229,7 @@ int main(int argc, char *const argv[])
         retval = flash_bmac(bmac);
         if (retval) {
             bfdev_errname(retval, &errname);
-            printf("Failed to flash bt mac: %s\n", errname);
+            bfdev_log_err("Failed to flash bt mac: %s\n", errname);
             return retval;
         }
     }
@@ -237,7 +238,7 @@ int main(int argc, char *const argv[])
         retval = flash_wmac(wmac);
         if (retval) {
             bfdev_errname(retval, &errname);
-            printf("Failed to flash wifi mac: %s\n", errname);
+            bfdev_log_err("Failed to flash wifi mac: %s\n", errname);
             return retval;
         }
     }
@@ -246,7 +247,7 @@ int main(int argc, char *const argv[])
         retval = flash_gain(gain);
         if (retval) {
             bfdev_errname(retval, &errname);
-            printf("Failed to flash rf gain: %s\n", errname);
+            bfdev_log_err("Failed to flash rf gain: %s\n", errname);
             return retval;
         }
     }
@@ -258,26 +259,26 @@ int main(int argc, char *const argv[])
 
         fd = open(file, O_RDONLY);
         if (fd < 0) {
-            printf("Failed to open file\n");
+            bfdev_log_err("Failed to open file\n");
             return fd;
         }
 
         retval = fstat(fd, &stat);
         if (retval) {
-            printf("Failed to fstat file\n");
+            bfdev_log_err("Failed to fstat file\n");
             return retval;
         }
 
         map = mmap(NULL, stat.st_size, PROT_READ, MAP_SHARED, fd, 0);
         if (map == MAP_FAILED) {
-            printf("Failed to mmap file\n");
+            bfdev_log_err("Failed to mmap file\n");
             return -BFDEV_ENOMEM;
         }
 
         retval = spinor_flash(map, stat.st_size);
         if (retval) {
             bfdev_errname(retval, &errname);
-            printf("Failed to flash chip: %s\n", errname);
+            bfdev_log_err("Failed to flash chip: %s\n", errname);
             return retval;
         }
 
@@ -289,7 +290,7 @@ int main(int argc, char *const argv[])
         retval = chip_reset();
         if (retval) {
             bfdev_errname(retval, &errname);
-            printf("Failed to reset chip: %s\n", errname);
+            bfdev_log_err("Failed to reset chip: %s\n", errname);
             return retval;
         }
     }

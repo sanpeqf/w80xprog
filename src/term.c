@@ -107,7 +107,7 @@ term_setup(unsigned int speed, int databits, int stopbits, char parity)
 }
 
 int
-term_rts(bool enable)
+term_reset(bool enable)
 {
     unsigned int state;
     int retval;
