@@ -1,3 +1,7 @@
-[submodule "bfdev"]
-	path = bfdev
+[submodule "lib/bfdev"]
+	path = lib/bfdev
 	url = https://github.com/openbfdev/bfdev
+[submodule "lib/zlib"]
+	path = lib/zlib
+	url = https://github.com/madler/zlib.git
+	branch = master

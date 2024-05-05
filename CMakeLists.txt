@@ -9,6 +9,14 @@ project(w80xprog VERSION 1.2 LANGUAGES C)
 include(GNUInstallDirs)
 include(CheckIncludeFiles)
 
+set(W80XPROG_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+set(W80XPROG_GENERATED_PATH ${PROJECT_BINARY_DIR}/generated)
+
+configure_file(
+    ${W80XPROG_MODULE_PATH}/config.h.in
+    ${W80XPROG_GENERATED_PATH}/config.h
+)
+
 add_compile_options(
     -std=gnu11
     -Wall
@@ -18,12 +26,7 @@ add_compile_options(
     -D_GNU_SOURCE
 )
 
-set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-add_subdirectory(bfdev)
-get_property(BFDEV_INCLUDE_DIRS GLOBAL PROPERTY "BFDEV_INCLUDE_DIRS")
-
 include_directories(
-    ${BFDEV_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_BINARY_DIR}/generated
 )
@@ -33,11 +36,7 @@ file(GLOB W80XPROG_SOURCE
     ${CMAKE_SOURCE_DIR}/src/*.c
 )
 
-configure_file(
-    ${CMAKE_SOURCE_DIR}/cmake/config.h.in
-    ${CMAKE_BINARY_DIR}/generated/config.h
-)
-
+include(${W80XPROG_MODULE_PATH}/bfdev.cmake)
 add_executable(${CMAKE_PROJECT_NAME} ${W80XPROG_SOURCE})
 target_link_libraries(${CMAKE_PROJECT_NAME} bfdev)
 
