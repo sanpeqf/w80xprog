@@ -93,6 +93,8 @@ int main(int argc, char *const argv[])
     speed = DEFAULTS_SPEED;
     nspeed = 0;
     flags = 0;
+
+    eidx = 0;
     esize = 0;
 
     bfdev_log_clr_level(&bfdev_log_default);

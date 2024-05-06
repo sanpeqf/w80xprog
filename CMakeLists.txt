@@ -21,6 +21,7 @@ add_compile_options(
     -std=gnu11
     -Wall
     -Wextra
+    -Werror
     -Wno-unused-parameter
     -Wno-sign-compare
     -D_GNU_SOURCE
